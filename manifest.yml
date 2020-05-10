@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+    name: icavtech-challenge
+spec:
+   replicas: 1
+   strategy:
+     rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+   minReadySeconds: 5 
+   template:
+     metadata:
+       labels:
+            app: icavtech-challenge
+     spec:
+       terminationGracePeriodSeconds: 30
+       containers:
+       - name: icavtech-challenge
+         image: icavtechicontainer.azurecr.io/icavtech-challenge:v1.0.0.181
+         imagePullPolicy: "Always"
+         ports:
+         - name: https
+           containerPort: 443
+           protocol: TCP
+         resources:
+           requests:
+              cpu: 250m
+           limits:
+              cpu: 500m
+         env:
+         - name: dev
+           value: "icavtech-challenge"
+       imagePullSecrets:
+       - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: icavtech-challenge
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 52.142.19.225
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: icavtech-challenge
